@@ -23,6 +23,7 @@ step and no dependencies: agents/skills are Markdown, hooks are plain Node ESM.
 2. Update `README.md`, `README.vi.md`, and `docs/` when behaviour or config changes.
 3. `npm run check` (sync check + `node --test` + `claude plugin validate .`).
 4. Live test: `claude --plugin-dir . -p "..."` in a scratch project.
+5. Release: `scripts/release.sh [patch|minor|major|X.Y.Z] [-m msg]` bumps `plugin.json` + `package.json`, runs checks, commits, tags `vX.Y.Z`, pushes, and updates the local plugin (`--dry-run` stops before commit).
 
 ## Conventions
 

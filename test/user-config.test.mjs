@@ -122,7 +122,8 @@ test('claudekei.jsonc template lists every specialist with its agents/*.md defau
     assert.equal(listed[name].model, model, `${name} model`);
     assert.equal(listed[name].effort, effort, `${name} effort`);
   }
-  assert.deepEqual(loadLimits(template.sessionManager), loadLimits());
+  // The template deliberately recommends 3 remembered sessions (code default: 1).
+  assert.deepEqual(loadLimits(template.sessionManager), { ...loadLimits(), maxSessionsPerAgent: 3 });
 });
 
 test('agentScope defaults to project; a valid project value wins over the user value', () => {

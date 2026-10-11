@@ -1,6 +1,6 @@
 {
   "name": "claudekei",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "description": "Claude Code plugin port of oh-my-openkei: orchestrator + specialist subagents with resumable sessions.",
   "type": "module",

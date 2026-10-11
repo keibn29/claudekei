@@ -107,6 +107,51 @@ test('PreToolUse SendMessage denies unknown aliases and passes raw ids through',
   assert.equal(raw, null);
 });
 
+const sendMessage = (session, agentType, to, extra = {}) =>
+  base(session, {
+    agent_type: agentType,
+    hook_event_name: 'PreToolUse',
+    tool_name: 'SendMessage',
+    tool_input: { to, message: 'hi' },
+    ...extra,
+  });
+
+test('sprinter cannot delegate: real agent and soft /sprint mode deny Agent', () => {
+  const real = run(agentCall(newSession(), 'claudekei:sprinter', 'claudekei:explorer'));
+  assert.equal(real.hookSpecificOutput.permissionDecision, 'deny');
+  assert.match(real.hookSpecificOutput.permissionDecisionReason, /^sprinter cannot delegate/);
+
+  const s = newSession();
+  run(prompt(s, 'claudekei:orchestrator', '/claudekei:sprint go'));
+  const soft = run(agentCall(s, 'claudekei:orchestrator', 'claudekei:explorer'));
+  assert.equal(soft.hookSpecificOutput.permissionDecision, 'deny');
+  // Subagent-originated calls are not main-thread and stay unaffected.
+  assert.equal(run({ ...agentCall(s, 'claudekei:orchestrator'), agent_id: 'sub1' }), null);
+});
+
+test('sprinter cannot resume known children via SendMessage; unknown targets pass', () => {
+  const s = newSession();
+  launch(s, 'ab4798b070eca6b7e', 'claudekei:explorer');
+  for (const to of ['exp-1', 'ab4798b070eca6b7e']) {
+    const denied = run(sendMessage(s, 'claudekei:sprinter', to));
+    assert.equal(denied.hookSpecificOutput.permissionDecision, 'deny');
+    assert.match(denied.hookSpecificOutput.permissionDecisionReason, /^sprinter cannot delegate/);
+  }
+  assert.equal(run(sendMessage(s, 'claudekei:sprinter', 'teammate-lead')), null);
+
+  // Soft sprint mode on an orchestrator session behaves the same.
+  const t = newSession();
+  launch(t, 'a1', 'claudekei:oracle');
+  run(prompt(t, 'claudekei:orchestrator', '/claudekei:sprint go'));
+  const soft = run(sendMessage(t, 'claudekei:orchestrator', 'ora-1'));
+  assert.equal(soft.hookSpecificOutput.permissionDecision, 'deny');
+
+  // Orchestrator still resumes children normally.
+  const u = newSession();
+  launch(u, 'a2', 'claudekei:oracle');
+  assert.equal(run(sendMessage(u, 'claudekei:orchestrator', 'ora-1')).hookSpecificOutput.permissionDecision, 'allow');
+});
+
 test('SubagentStop settles a child; SendMessage marks it running again', () => {
   const s = newSession();
   launch(s, 'a1', 'claudekei:explorer', 'async_launched');
@@ -191,8 +236,10 @@ test('soft switch then real agent change: the real agent wins and the stale mode
   const s = newSession();
   run(prompt(s, 'claudekei:orchestrator', '/claudekei:sprint go'));
   assert.deepEqual([state(s).mode, state(s).modeBaseAgentType], ['sprinter', 'orchestrator']);
-  // Same process: soft mode (sprinter) still applies, delegation unrestricted.
-  assert.equal(run(agentCall(s, 'claudekei:orchestrator')), null);
+  // Same process: soft mode (sprinter) still applies, so delegation is denied.
+  const soft = run(agentCall(s, 'claudekei:orchestrator'));
+  assert.equal(soft.hookSpecificOutput.permissionDecision, 'deny');
+  assert.match(soft.hookSpecificOutput.permissionDecisionReason, /^sprinter cannot delegate/);
   // Resumed as planner: planner delegation rules apply.
   const denied = run(agentCall(s, 'claudekei:planner'));
   assert.equal(denied.hookSpecificOutput.permissionDecision, 'deny');
@@ -247,7 +294,7 @@ test('legacy state file without modeBaseAgentType', () => {
   // Real agent differs from the legacy soft mode: dropped.
   const a = newSession();
   legacy(a);
-  assert.equal(run(agentCall(a, 'claudekei:sprinter')), null);
+  assert.equal(run(agentCall(a, 'claudekei:orchestrator')), null);
   assert.equal(state(a).mode, null);
   // Real agent equals the soft mode, or none is reported: kept.
   const b = newSession();

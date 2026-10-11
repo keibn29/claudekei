@@ -83,7 +83,7 @@ specialist.
 |---|---|---|---|
 | **orchestrator** (default) | `claude` / `/claudekei:orchestrate` | opus | Delegation-first coordinator: routes, parallelizes, reuses sessions, integrates and verifies |
 | **planner** | `claude --agent claudekei:planner` / `/claudekei:plan` | opus | Interview-first planning; delegates only to explorer/librarian/oracle/designer; returns `<planner-plan>` |
-| **sprinter** | `claude --agent claudekei:sprinter` / `/claudekei:sprint` | sonnet | Fast self-executing agent, no delegation |
+| **sprinter** | `claude --agent claudekei:sprinter` / `/claudekei:sprint` | sonnet | Fast self-executing agent; delegation (Agent) and resuming children (SendMessage) are blocked by a hook |
 | **business-analyst** | `claude --agent claudekei:business-analyst` / `/claudekei:analyze` | opus | Research + requirements + strategy; delegates to explorer/librarian/oracle; saves analysis to `.business-analyst/*.md` |
 
 ¹ Used when nothing else picks the model, e.g. `claude --agent claudekei:sprinter`. The
@@ -207,6 +207,7 @@ Details: **[docs/session-management.md](docs/session-management.md)**.
 npm test                # hook unit + integration tests (node:test)
 npm run sync:modes      # regenerate /claudekei:* mode skills from agents/*.md
 npm run check           # sync check + tests + claude plugin validate
+scripts/release.sh      # bump (patch), check, commit, tag, push, update local plugin
 ```
 
 `skills/{orchestrate,plan,sprint,analyze}/SKILL.md` are generated from the matching

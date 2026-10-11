@@ -20,6 +20,7 @@ import {
   applyAgentConfig,
   applyModeSwitch,
   checkDelegation,
+  checkResume,
   checkDesignerEdit,
   clearStaleMode,
   detectModeSwitch,
@@ -232,6 +233,11 @@ function onPreSendMessage(input, { store }) {
   const state = store.readState(input.session_id);
   const child = findChild(state, target);
   if (child) {
+    if (isMainThread(input)) {
+      const mode = effectiveMode(readMainState(input, store), input.agent_type);
+      const reason = mode && checkResume(mode, child);
+      if (reason) return deny(reason);
+    }
     if (child.alias !== target) return null; // already a raw agent id
     const updatedInput = { ...toolInput, to: child.agentId };
     if (toolInput.recipient === target) updatedInput.recipient = child.agentId;

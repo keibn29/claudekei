@@ -118,7 +118,7 @@ test('checkDelegation enforces planner and business-analyst sets', () => {
   assert.equal(checkDelegation('planner', 'claudekei:explorer'), null);
   assert.match(checkDelegation('planner', 'claudekei:backend-developer'), /may only delegate/);
   assert.match(checkDelegation('business-analyst', 'claudekei:designer'), /may only delegate/);
-  assert.equal(checkDelegation('sprinter', 'claudekei:oracle'), null);
+  assert.match(checkDelegation('sprinter', 'claudekei:oracle'), /^sprinter cannot delegate/);
 });
 
 test('detectModeSwitch recognises claudekei mode commands only', () => {

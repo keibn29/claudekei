@@ -162,8 +162,17 @@ export function checkDelegation(mode, subagentType) {
   if (!allowed) return null;
   const type = shortType(subagentType);
   if (allowed.has(type)) return null;
+  if (allowed.size === 0) {
+    return `${mode} cannot delegate to subagents ("${subagentType}" denied). Do the work yourself.`;
+  }
   const list = [...allowed].map((t) => `claudekei:${t}`).join(', ');
   return `${mode} may only delegate to: ${list}. "${subagentType}" is not allowed in ${mode} mode.`;
+}
+
+/** Returns a deny reason when the mode forbids all delegation (resuming a child included). */
+export function checkResume(mode, child) {
+  if (DELEGATE_SETS[mode]?.size !== 0) return null;
+  return checkDelegation(mode, child.agentType);
 }
 
 const SPEC_EXTENSION = /\.mdx?$/i;

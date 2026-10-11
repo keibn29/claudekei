@@ -24,10 +24,10 @@ export const REMINDER_AGENTS = new Set(['orchestrator', 'planner', 'sprinter']);
 // Primary agents that receive the delegation nudge after Read/Write.
 export const NUDGE_AGENTS = new Set(['orchestrator', 'planner']);
 
-// Which specialists each primary agent may delegate to. `null` = no limit.
+// Which specialists each primary agent may delegate to. `null` = no limit, an empty Set = no delegation.
 export const DELEGATE_SETS = {
   orchestrator: null,
-  sprinter: null,
+  sprinter: new Set(),
   planner: new Set(['explorer', 'librarian', 'oracle', 'designer']),
   'business-analyst': new Set(['explorer', 'librarian', 'oracle']),
 };

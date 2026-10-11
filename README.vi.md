@@ -82,7 +82,7 @@ Kiểm tra: mở session và gõ `ping all agents`, orchestrator sẽ gọi lầ
 |---|---|---|---|
 | **orchestrator** (mặc định) | `claude` / `/claudekei:orchestrate` | opus | Điều phối, ưu tiên ủy quyền: chia việc, chạy song song, reuse session, tổng hợp và kiểm tra |
 | **planner** | `claude --agent claudekei:planner` / `/claudekei:plan` | opus | Lập kế hoạch qua phỏng vấn; chỉ ủy quyền cho explorer/librarian/oracle/designer; trả về `<planner-plan>` |
-| **sprinter** | `claude --agent claudekei:sprinter` / `/claudekei:sprint` | sonnet | Tự làm nhanh, không ủy quyền |
+| **sprinter** | `claude --agent claudekei:sprinter` / `/claudekei:sprint` | sonnet | Tự làm nhanh; hook chặn ủy quyền (Agent) và resume child (SendMessage) |
 | **business-analyst** | `claude --agent claudekei:business-analyst` / `/claudekei:analyze` | opus | Nghiên cứu, viết yêu cầu, chiến lược; lưu phân tích vào `.business-analyst/*.md` |
 
 ¹ Dùng khi không có gì khác chọn model, ví dụ `claude --agent claudekei:sprinter`. App desktop
@@ -205,6 +205,7 @@ Chi tiết: **[docs/session-management.md](docs/session-management.md)**.
 npm test                # test hook (node:test)
 npm run sync:modes      # tạo lại skill /claudekei:* từ agents/*.md
 npm run check           # kiểm tra sync + test + claude plugin validate
+scripts/release.sh      # bump (patch), check, commit, tag, push, update local plugin
 ```
 
 ## License
